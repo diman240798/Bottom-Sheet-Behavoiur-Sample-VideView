@@ -10,18 +10,58 @@ import android.view.View
 import android.widget.MediaController
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.bottom_sheet.*
-
-
+import java.util.*
+import android.widget.ArrayAdapter
+import kotlin.collections.ArrayList
+import android.graphics.Bitmap
+import android.media.ThumbnailUtils
+import android.provider.MediaStore
+import android.widget.LinearLayout
 
 
 class MainActivity : AppCompatActivity() {
+
+    private lateinit var bottomSheetBehavior: BottomSheetBehavior<LinearLayout>
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        val path = Environment.getExternalStorageDirectory().canonicalPath + "/Download/vid.mp4";
-        video_view.setVideoPath(path)
+        val listVideos = ArrayList<VideoDetails>()
+
+        var allMedia = SharedPreferenceUtil.getVideos(this);
+        var allMediaThumbs = SharedPreferenceUtil.getVideosThumbs(this);
+
+
+        Thread {
+            if (allMedia == null || allMedia.isEmpty()) allMedia = getAllMedia(this);
+            if (allMediaThumbs == null || allMediaThumbs.isEmpty()) {
+                for (vid in allMedia) {
+                    Log.d("video", vid);
+                    var thumb: Bitmap =
+                        ThumbnailUtils.createVideoThumbnail(vid, MediaStore.Images.Thumbnails.MINI_KIND);
+                    allMediaThumbs.add(thumb)
+                }
+                SharedPreferenceUtil.setVideosThumbs(this, allMediaThumbs)
+                SharedPreferenceUtil.setVideos(this, allMedia)
+                SharedPreferenceUtil.setVideosSize(this, allMedia.size);
+            }
+            for (i in 0..(allMedia.size - 1)) {
+                var thumb: Bitmap = allMediaThumbs[i]
+                var vid = allMedia[i]
+                Log.d("video SETTING", vid);
+                listVideos.add(VideoDetails(thumb, vid))
+            }
+
+            val frontListBaseAdapter = VideoListBaseAdapter(this, listVideos)
+
+
+            runOnUiThread({
+                setVideos(frontListBaseAdapter, listVideos)
+            })
+
+        }.start();
+
 
         var mediaController = MediaController(this)
         mediaController.visibility = View.GONE
@@ -29,11 +69,10 @@ class MainActivity : AppCompatActivity() {
         video_view.setMediaController(mediaController)
 
         // настройка поведения нижнего экрана
-        val bottomSheetBehavior = BottomSheetBehavior.from(bottom_sheet)
+        bottomSheetBehavior = BottomSheetBehavior.from(bottom_sheet)
 
         fab.setOnClickListener {
-            bottomSheetBehavior.state = BottomSheetBehavior.STATE_EXPANDED
-            video_view.start()
+            startVideo();
         }
 
         stop_button.setOnClickListener {
@@ -65,18 +104,15 @@ class MainActivity : AppCompatActivity() {
 
             override fun onSlide(bottomSheet: View, slideOffset: Float) {
                 Log.d("SlideOffset", slideOffset.toString())
-
                 // animate fab
                 fab.animate().scaleX(1 - slideOffset).scaleY(1 - slideOffset).setDuration(0).start()
 
 
-                val btwAnim = 0.1F;
-                if (slideOffset <= btwAnim ){
-
-
+                val btwAnim = 0.2F;
+                if (slideOffset <= btwAnim) {
                     val percent: Float = slideOffset / btwAnim;
 
-                    var animWidth =  (initialWidth + widthDifMax * percent).toDouble()
+                    var animWidth = (initialWidth + widthDifMax * percent).toDouble()
 
                     val layoutParams = video_outer.getLayoutParams()
                     layoutParams.width = Math.ceil(animWidth).toInt()
@@ -89,10 +125,9 @@ class MainActivity : AppCompatActivity() {
                     video_outer.setLayoutParams(layoutParamsWidth)
 
 
+                    val percent: Float = (slideOffset - btwAnim) / (1 - btwAnim);
 
-                    val percent: Float = (slideOffset - btwAnim) /(1 - btwAnim);
-
-                    var animWidth =  (initialWidth + heightDifMax * percent).toDouble()
+                    var animWidth = (initialWidth + heightDifMax * percent).toDouble()
 
                     // animate View
                     val layoutParamsView = video_outer.getLayoutParams()
@@ -112,6 +147,21 @@ class MainActivity : AppCompatActivity() {
         })
     }
 
+    private fun setVideos(frontListBaseAdapter: VideoListBaseAdapter, listVideos: ArrayList<VideoDetails>) {
+        listView.adapter = frontListBaseAdapter
+        listView.setOnItemClickListener() { parent, view, position, id ->
+            val allowed = bottomSheetBehavior.state == BottomSheetBehavior.STATE_COLLAPSED
+            if (!allowed) return@setOnItemClickListener;
+            video_view.setVideoPath(listVideos[position].videoPath)
+            startVideo()
+        }
+    }
+
+    private fun startVideo() {
+        bottomSheetBehavior.state = BottomSheetBehavior.STATE_EXPANDED
+        video_view.start()
+    }
+
     override fun onResume() {
         super.onResume()
         if (video_view.isPlaying) {
@@ -121,10 +171,6 @@ class MainActivity : AppCompatActivity() {
         }
     }
 }
-
-
-
-
 
 
 /*WORKS
