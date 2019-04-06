@@ -63,6 +63,7 @@ class MainActivity : AppCompatActivity() {
                 }
             }
 
+            @SuppressLint("RestrictedApi")
             override fun onSlide(bottomSheet: View, slideOffset: Float) {
                 Log.d("SlideOffset", slideOffset.toString())
 
@@ -84,6 +85,10 @@ class MainActivity : AppCompatActivity() {
                 } else {
                     // ensure fab is fully hidden
                     fab.animate().scaleX(0F).scaleY(0F).setDuration(0).start()
+
+                    if (fab.visibility == View.GONE) {
+                        fab.visibility = View.VISIBLE
+                    }
 
                     // ensure width set to max
                     val layoutParamsWidth = video_outer.getLayoutParams()
@@ -173,13 +178,13 @@ class MainActivity : AppCompatActivity() {
     private fun setVideos(frontListBaseAdapter: VideoListBaseAdapter, listVideos: ArrayList<VideoDetails>) {
         listView.adapter = frontListBaseAdapter
         listView.setOnItemClickListener() { parent, view, position, id ->
-            val allowed = (bottomSheetBehavior.state == BottomSheetBehavior.STATE_COLLAPSED || bottomSheetBehavior.state == BottomSheetBehavior.STATE_HIDDEN)
+            val allowed = (bottomSheetBehavior.state == BottomSheetBehavior.STATE_COLLAPSED
+                    || (bottomSheetBehavior.state == BottomSheetBehavior.STATE_HIDDEN && bottomSheetBehavior.isHideable))
             if (!allowed) return@setOnItemClickListener;
 
             if (bottomSheetBehavior.isHideable) {
-                fab.visibility = View.VISIBLE
-                bottomSheetBehavior.isHideable = false;
                 bottomSheetBehavior.state = BottomSheetBehavior.STATE_COLLAPSED
+                bottomSheetBehavior.isHideable = false;
             }
 
 
