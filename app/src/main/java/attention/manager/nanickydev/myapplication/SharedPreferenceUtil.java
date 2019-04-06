@@ -15,9 +15,9 @@ import static android.content.Context.MODE_PRIVATE;
 public class SharedPreferenceUtil {
     private static String KEY = "videos_key";
 
-    public static String VIDEOS_KEY = "video_paths";
-    public static String VIDEOS_THUMBS_KEY = "video_thumbs";
-    public static String VIDEOS_SIZE_KEY = "video_size";
+    private static String VIDEOS_KEY = "video_paths";
+    private static String VIDEOS_THUMBS_KEY = "video_thumbs";
+    private static String VIDEOS_SIZE_KEY = "video_size";
 
     public static List<String> getVideos(Context context) {
         SharedPreferences sharedPreferences = context.getSharedPreferences(KEY, MODE_PRIVATE);
