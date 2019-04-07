@@ -26,9 +26,9 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        listView.startNestedScroll(View.OVER_SCROLL_ALWAYS)
 
         setVideos()
-
 
         videoController = MediaController(this)
         videoController.visibility = View.GONE
@@ -58,7 +58,13 @@ class MainActivity : AppCompatActivity() {
         bottomSheetBehavior.setBottomSheetCallback(object : BottomSheetBehavior.BottomSheetCallback() {
             override fun onStateChanged(bottomSheet: View, newState: Int) {
                 when (newState) {
-                    BottomSheetBehavior.STATE_EXPANDED -> videoController.visibility = View.VISIBLE
+                    BottomSheetBehavior.STATE_COLLAPSED -> listView.isNestedScrollingEnabled = true
+
+                    BottomSheetBehavior.STATE_EXPANDED -> {
+                        videoController.visibility = View.VISIBLE
+                        listView.isNestedScrollingEnabled = false
+                    }
+
                     else -> videoController.visibility = View.GONE
                 }
             }
@@ -177,6 +183,7 @@ class MainActivity : AppCompatActivity() {
     @SuppressLint("RestrictedApi")
     private fun setVideos(frontListBaseAdapter: VideoListBaseAdapter, listVideos: ArrayList<VideoDetails>) {
         listView.adapter = frontListBaseAdapter
+        // on Item Click
         listView.setOnItemClickListener() { parent, view, position, id ->
             val allowed = (bottomSheetBehavior.state == BottomSheetBehavior.STATE_COLLAPSED
                     || (bottomSheetBehavior.state == BottomSheetBehavior.STATE_HIDDEN && bottomSheetBehavior.isHideable))
@@ -191,6 +198,7 @@ class MainActivity : AppCompatActivity() {
             video_view.setVideoPath(listVideos[position].videoPath)
             startVideo()
         }
+        // on Item Click
     }
 
     private fun startVideo() {
