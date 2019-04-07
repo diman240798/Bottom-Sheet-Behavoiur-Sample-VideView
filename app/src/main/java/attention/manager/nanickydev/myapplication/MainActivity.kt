@@ -15,6 +15,7 @@ import android.graphics.Bitmap
 import android.media.ThumbnailUtils
 import android.provider.MediaStore
 import android.widget.LinearLayout
+import java.util.*
 
 
 class MainActivity : AppCompatActivity() {
@@ -29,6 +30,7 @@ class MainActivity : AppCompatActivity() {
         listView.startNestedScroll(View.OVER_SCROLL_ALWAYS)
 
         setVideos()
+        update.setOnClickListener { getNewVideos(Collections.emptyList(), Collections.emptyList()) }
 
         videoController = MediaController(this)
         videoController.visibility = View.GONE
@@ -144,28 +146,34 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setVideos() {
-        val listVideos = ArrayList<VideoDetails>()
 
         var allMedia = SharedPreferenceUtil.getVideos(this);
         var allMediaThumbs = SharedPreferenceUtil.getVideosThumbs(this);
 
+        getNewVideos(allMedia, allMediaThumbs)
+    }
 
+    private fun getNewVideos(allMedia: MutableList<String>, allMediaThumbs: MutableList<Bitmap>) {
+        progressBar.visibility = View.VISIBLE
+        var allMedia1 = ArrayList<String>(allMedia)
+        var allMediaThumbs1 = ArrayList<Bitmap>(allMediaThumbs)
         Thread {
-            if (allMedia == null || allMedia.isEmpty()) allMedia = getAllMedia(this);
-            if (allMediaThumbs == null || allMediaThumbs.isEmpty()) {
-                for (vid in allMedia) {
+            val listVideos = ArrayList<VideoDetails>()
+            if (allMedia1.isEmpty()) allMedia1 = getAllMedia(this);
+            if (allMediaThumbs1.isEmpty()) {
+                for (vid in allMedia1) {
                     Log.d("video", vid);
                     var thumb: Bitmap =
                         ThumbnailUtils.createVideoThumbnail(vid, MediaStore.Images.Thumbnails.MINI_KIND);
-                    allMediaThumbs.add(thumb)
+                    allMediaThumbs1.add(thumb)
                 }
-                SharedPreferenceUtil.setVideosThumbs(this, allMediaThumbs)
-                SharedPreferenceUtil.setVideos(this, allMedia)
-                SharedPreferenceUtil.setVideosSize(this, allMedia.size);
+                SharedPreferenceUtil.setVideosThumbs(this, allMediaThumbs1)
+                SharedPreferenceUtil.setVideos(this, allMedia1)
+                SharedPreferenceUtil.setVideosSize(this, allMedia1.size);
             }
-            for (i in 0..(allMedia.size - 1)) {
-                var thumb: Bitmap = allMediaThumbs[i]
-                var vid = allMedia[i]
+            for (i in 0..(allMedia1.size - 1)) {
+                var thumb: Bitmap = allMediaThumbs1[i]
+                var vid = allMedia1[i]
                 Log.d("video SETTING", vid);
                 listVideos.add(VideoDetails(thumb, vid))
             }
@@ -175,9 +183,10 @@ class MainActivity : AppCompatActivity() {
 
             runOnUiThread({
                 setVideos(frontListBaseAdapter, listVideos)
+                progressBar.visibility = View.GONE
             })
 
-        }.start();
+        }.start()
     }
 
     @SuppressLint("RestrictedApi")
