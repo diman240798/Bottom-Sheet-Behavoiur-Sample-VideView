@@ -64,6 +64,7 @@ class MainActivity : AppCompatActivity() {
 
                     BottomSheetBehavior.STATE_EXPANDED -> {
                         videoController.visibility = View.VISIBLE
+                        videoController.hide()
                         listView.isNestedScrollingEnabled = false
                     }
 
