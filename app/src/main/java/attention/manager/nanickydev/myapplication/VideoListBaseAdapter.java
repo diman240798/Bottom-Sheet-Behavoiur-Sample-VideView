@@ -32,12 +32,12 @@ public class VideoListBaseAdapter extends BaseAdapter {
         return position;
     }
 
-    // get the views in frontview xml file where you have
+    // get the views in video_item xml file where you have
     // define multiple views that will appear in listview each row
     public View getView(int position, View convertView, ViewGroup parent) {
         ViewHolder holder;
         if (convertView == null) {
-            convertView = l_Inflater.inflate(R.layout.frontview, null);
+            convertView = l_Inflater.inflate(R.layout.video_item, null);
             holder = new ViewHolder();
             holder.Image = (ImageView) convertView.findViewById(R.id.adminpic1);
             holder.MsgType = (TextView) convertView.findViewById(R.id.msgtype1);
