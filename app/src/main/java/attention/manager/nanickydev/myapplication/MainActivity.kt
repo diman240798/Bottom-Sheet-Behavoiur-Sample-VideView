@@ -44,7 +44,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setUpBottomSheetBottomView() {
-        
+
     }
 
     private fun setUpBottomSheetBehavior() {
