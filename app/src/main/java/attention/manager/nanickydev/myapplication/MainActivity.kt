@@ -44,7 +44,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setUpBottomSheetBottomView() {
-
+        
     }
 
     private fun setUpBottomSheetBehavior() {
@@ -52,78 +52,83 @@ class MainActivity : AppCompatActivity() {
         bottomSheetBehavior.isHideable = true
         bottomSheetBehavior.state = BottomSheetBehavior.STATE_HIDDEN
 
-
-        val initialWidth = getResources().getDimension(R.dimen.video_menu_height).toInt();
-        var widthDifMax = Resources.getSystem().getDisplayMetrics().widthPixels - initialWidth
-        var heightDifMax = Resources.getSystem().getDisplayMetrics().widthPixels - initialWidth
-
         bottomSheetBehavior.setBottomSheetCallback(object : BottomSheetBehavior.BottomSheetCallback() {
             override fun onStateChanged(bottomSheet: View, newState: Int) {
-                when (newState) {
-                    BottomSheetBehavior.STATE_COLLAPSED -> listView.isNestedScrollingEnabled = true
-
-                    BottomSheetBehavior.STATE_EXPANDED -> {
-                        videoController.visibility = View.VISIBLE
-                        videoController.hide()
-                        listView.isNestedScrollingEnabled = false
-                    }
-
-                    else -> videoController.visibility = View.GONE
-                }
+                onBottomSheetStateChanged(newState)
             }
 
-            @SuppressLint("RestrictedApi")
             override fun onSlide(bottomSheet: View, slideOffset: Float) {
-                Log.d("SlideOffset", slideOffset.toString())
-
-
-                val btwAnim = 0.2F;
-                if (slideOffset <= btwAnim) {
-                    val percent: Float = slideOffset / btwAnim;
-
-                    // animate fab
-                    fab.animate().scaleX(1 - percent).scaleY(1 - percent).setDuration(0).start()
-
-
-                    var animWidth = (initialWidth + widthDifMax * percent).toDouble()
-
-                    val layoutParams = video_outer.getLayoutParams()
-                    layoutParams.width = Math.ceil(animWidth).toInt()
-                    video_outer.setLayoutParams(layoutParams)
-
-                } else {
-                    // ensure fab is fully hidden
-                    fab.animate().scaleX(0F).scaleY(0F).setDuration(0).start()
-
-                    if (fab.visibility == View.GONE) {
-                        fab.visibility = View.VISIBLE
-                    }
-
-                    // ensure width set to max
-                    val layoutParamsWidth = video_outer.getLayoutParams()
-                    layoutParamsWidth.width = widthDifMax + initialWidth
-                    video_outer.setLayoutParams(layoutParamsWidth)
-                }
-
-                //val percent: Float = (slideOffset - btwAnim) / (1 - btwAnim);
-                //var animWidth = (initialWidth + heightDifMax * percent).toDouble() // after
-
-                var animWidth =
-                    (initialWidth + (Resources.getSystem().getDisplayMetrics().heightPixels.toDouble() / 2 - 160) * slideOffset)
-
-                // animate View
-                val layoutParamsView = video_outer.getLayoutParams()
-                layoutParamsView.height = Math.ceil(animWidth).toInt()
-                video_outer.setLayoutParams(layoutParamsView)
-
-                // animate Parent
-                val layoutParamsSurrender = video_surrounder.getLayoutParams()
-                layoutParamsSurrender.height = Math.ceil(animWidth).toInt()
-                video_surrounder.setLayoutParams(layoutParamsSurrender)
-
-
+                onBottomSheetSlide(slideOffset)
             }
         })
+    }
+
+    @SuppressLint("RestrictedApi")
+    private fun onBottomSheetSlide(slideOffset: Float) {
+        Log.d("SlideOffset", slideOffset.toString())
+
+        val initialWidth = resources.getDimension(R.dimen.video_menu_height).toInt()
+        val widthDifMax = Resources.getSystem().displayMetrics.widthPixels - initialWidth
+        var heightDifMax = Resources.getSystem().displayMetrics.widthPixels - initialWidth
+
+
+        val btwAnim = 0.2F
+        if (slideOffset <= btwAnim) {
+            val percent: Float = slideOffset / btwAnim
+
+            // animate fab
+            fab.animate().scaleX(1 - percent).scaleY(1 - percent).setDuration(0).start()
+
+
+            val animWidth = (initialWidth + widthDifMax * percent).toDouble()
+
+            val layoutParams = video_outer.layoutParams
+            layoutParams.width = Math.ceil(animWidth).toInt()
+            video_outer.layoutParams = layoutParams
+
+        } else {
+            // ensure fab is fully hidden
+            fab.animate().scaleX(0F).scaleY(0F).setDuration(0).start()
+
+            if (fab.visibility == View.GONE) {
+                fab.visibility = View.VISIBLE
+            }
+
+            // ensure width set to max
+            val layoutParamsWidth = video_outer.layoutParams
+            layoutParamsWidth.width = widthDifMax + initialWidth
+            video_outer.layoutParams = layoutParamsWidth
+        }
+
+        //val percent: Float = (slideOffset - btwAnim) / (1 - btwAnim);
+        //var animWidth = (initialWidth + heightDifMax * percent).toDouble() // after
+
+        val animWidth =
+            (initialWidth + (Resources.getSystem().displayMetrics.heightPixels.toDouble() / 2 - 160) * slideOffset)
+
+        // animate View
+        val layoutParamsView = video_outer.layoutParams
+        layoutParamsView.height = Math.ceil(animWidth).toInt()
+        video_outer.layoutParams = layoutParamsView
+
+        // animate Parent
+        val layoutParamsSurrender = video_surrounder.layoutParams
+        layoutParamsSurrender.height = Math.ceil(animWidth).toInt()
+        video_surrounder.layoutParams = layoutParamsSurrender
+    }
+
+    private fun onBottomSheetStateChanged(newState: Int) {
+        when (newState) {
+            BottomSheetBehavior.STATE_COLLAPSED -> listView.isNestedScrollingEnabled = true
+
+            BottomSheetBehavior.STATE_EXPANDED -> {
+                videoController.visibility = View.VISIBLE
+                videoController.hide()
+                listView.isNestedScrollingEnabled = false
+            }
+
+            else -> videoController.visibility = View.GONE
+        }
     }
 
     private fun setUpBottomSheetView() {
@@ -142,14 +147,14 @@ class MainActivity : AppCompatActivity() {
     private fun setUpFab() {
         fab.visibility = View.GONE
         fab.setOnClickListener {
-            startVideo();
+            startVideo()
         }
     }
 
     private fun setVideos() {
 
-        var allMedia = SharedPreferenceUtil.getVideos(this);
-        var allMediaThumbs = SharedPreferenceUtil.getVideosThumbs(this);
+        val allMedia = SharedPreferenceUtil.getVideos(this)
+        val allMediaThumbs = SharedPreferenceUtil.getVideosThumbs(this)
 
         getNewVideos(allMedia, allMediaThumbs)
     }
@@ -157,35 +162,35 @@ class MainActivity : AppCompatActivity() {
     private fun getNewVideos(allMedia: MutableList<String>, allMediaThumbs: MutableList<Bitmap>) {
         progressBar.visibility = View.VISIBLE
         var allMedia1 = ArrayList<String>(allMedia)
-        var allMediaThumbs1 = ArrayList<Bitmap>(allMediaThumbs)
+        val allMediaThumbs1 = ArrayList<Bitmap>(allMediaThumbs)
         Thread {
             val listVideos = ArrayList<VideoDetails>()
-            if (allMedia1.isEmpty()) allMedia1 = getAllMedia(this);
+            if (allMedia1.isEmpty()) allMedia1 = getAllMedia(this)
             if (allMediaThumbs1.isEmpty()) {
                 for (vid in allMedia1) {
-                    Log.d("video", vid);
-                    var thumb: Bitmap =
-                        ThumbnailUtils.createVideoThumbnail(vid, MediaStore.Images.Thumbnails.MINI_KIND);
+                    Log.d("video", vid)
+                    val thumb: Bitmap =
+                        ThumbnailUtils.createVideoThumbnail(vid, MediaStore.Images.Thumbnails.MINI_KIND)
                     allMediaThumbs1.add(thumb)
                 }
                 SharedPreferenceUtil.setVideosThumbs(this, allMediaThumbs1)
                 SharedPreferenceUtil.setVideos(this, allMedia1)
-                SharedPreferenceUtil.setVideosSize(this, allMedia1.size);
+                SharedPreferenceUtil.setVideosSize(this, allMedia1.size)
             }
             for (i in 0..(allMedia1.size - 1)) {
-                var thumb: Bitmap = allMediaThumbs1[i]
-                var vid = allMedia1[i]
-                Log.d("video SETTING", vid);
+                val thumb: Bitmap = allMediaThumbs1[i]
+                val vid = allMedia1[i]
+                Log.d("video SETTING", vid)
                 listVideos.add(VideoDetails(thumb, vid))
             }
 
             val frontListBaseAdapter = VideoListBaseAdapter(this, listVideos)
 
 
-            runOnUiThread({
+            runOnUiThread {
                 setVideos(frontListBaseAdapter, listVideos)
                 progressBar.visibility = View.GONE
-            })
+            }
 
         }.start()
     }
@@ -194,14 +199,14 @@ class MainActivity : AppCompatActivity() {
     private fun setVideos(frontListBaseAdapter: VideoListBaseAdapter, listVideos: ArrayList<VideoDetails>) {
         listView.adapter = frontListBaseAdapter
         // on Item Click
-        listView.setOnItemClickListener() { parent, view, position, id ->
+        listView.setOnItemClickListener { parent, view, position, id ->
             val allowed = (bottomSheetBehavior.state == BottomSheetBehavior.STATE_COLLAPSED
                     || (bottomSheetBehavior.state == BottomSheetBehavior.STATE_HIDDEN && bottomSheetBehavior.isHideable))
-            if (!allowed) return@setOnItemClickListener;
+            if (!allowed) return@setOnItemClickListener
 
             if (bottomSheetBehavior.isHideable) {
                 bottomSheetBehavior.state = BottomSheetBehavior.STATE_COLLAPSED
-                bottomSheetBehavior.isHideable = false;
+                bottomSheetBehavior.isHideable = false
             }
 
 
