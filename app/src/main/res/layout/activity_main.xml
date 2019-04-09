@@ -11,10 +11,12 @@
             android:layout_width="match_parent"
             android:layout_height="?android:actionBarSize">
         <android.support.design.widget.CollapsingToolbarLayout
+                android:id="@+id/collaps_toolbar"
                 app:layout_scrollFlags="scroll|enterAlways"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent">
             <android.support.design.widget.CoordinatorLayout
+                    android:background="@drawable/bottom_item"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent">
 
